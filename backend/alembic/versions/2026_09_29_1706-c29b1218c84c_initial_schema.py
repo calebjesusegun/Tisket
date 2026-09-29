@@ -18,8 +18,15 @@ branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 # Expressions must match app/repositories/search.py so PostgreSQL can use the indexes.
-TASKS_TSV = "to_tsvector('english', coalesce(title, '') || ' ' || coalesce(description, ''))"
-NOTES_TSV = "to_tsvector('english', coalesce(title, '') || ' ' || coalesce(content, ''))"
+# Title words weigh more (A) than body words (B) when ranking.
+TASKS_TSV = (
+    "(setweight(to_tsvector('english'::regconfig, coalesce(title, '')), 'A') || "
+    "setweight(to_tsvector('english'::regconfig, coalesce(description, '')), 'B'))"
+)
+NOTES_TSV = (
+    "(setweight(to_tsvector('english'::regconfig, coalesce(title, '')), 'A') || "
+    "setweight(to_tsvector('english'::regconfig, coalesce(content, '')), 'B'))"
+)
 
 
 def upgrade() -> None:
