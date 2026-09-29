@@ -7,14 +7,12 @@
 
 ---
 
-> ### ▶ RESUME HERE (last updated 2026-09-29, after Phase 5)
-> - **Phases 1–5 are done**, committed and pushed (last commit `91e609a`). CI is green on all 3 jobs.
-> - **Next: Phase 6 (frontend features).** Start by replacing the `PlaceholderPage` routes in
->   `frontend/src/app/routes.tsx`, one feature at a time: tasks → tags → notes → search → reminders.
->   Follow the "Phase 6" plan in section 4 and write tests with each feature.
-> - The working tree is clean, with no uncommitted work. Backend: 187 tests (96.7 % coverage), plus
->   189 on PostgreSQL. Frontend: 28 tests.
-> - Before coding, run the verification commands in section 3 to confirm everything is still green.
+> ### ▶ RESUME HERE (last updated 2026-09-29, after Phase 6)
+> - **Phases 1–6 are done**, pending commit/push and CI verification for Phase 6.
+> - **Next: Phase 7 (Playwright E2E).** Add the three planned browser flows and an E2E job to CI.
+> - Phase 6 frontend verification: lint, formatting, typecheck, build passed; 36 tests passed.
+>   The production build emits a chunk size advisory for its 650 kB JavaScript bundle.
+> - Backend baseline remains 187 SQLite tests (96.7 % coverage) and 189 PostgreSQL tests.
 
 ## 0. Your job
 
@@ -112,7 +110,7 @@ short checklist of anything they must click or paste themselves in Vercel or Rai
 | 3. Tasks + tags API | ✅ done | `/api/v1/tasks` (filters: repeatable `status`, `priority`, `tag`; sort `due_at`/`priority`/`created_at`/`updated_at`/`title`) and `/api/v1/tags`. Services: `TagService`, `TaskService`, pure `services/reminder_rules.py` (is_overdue, is_due_soon, needs_notification). 121 tests, 98.6 % coverage; green on PostgreSQL. Test helpers are in `tests/factories.py`. Service list methods are named `list_tasks` and `list_tags`, and the repo uses `find`, to avoid shadowing `list`. |
 | 4. Notes, search, reminders API | ✅ done | `/api/v1/notes` (filters tag/pinned/task_id, pinned first), `/api/v1/search?q=&type=all|task|note` (segments in `title_highlights` and `snippet`), `/api/v1/reminders/{due-soon?hours=,overdue,notifications}` (all `Page[TaskRead]`), `POST /reminders/{id}/dismiss` → TaskRead, `POST /reminders/dismiss-all` → `{dismissed}`. 187 tests on SQLite (96.7 %), 189 on PG, including an EXPLAIN check that the GIN index is used. **The backend API is complete.** |
 | 5. Frontend foundation | ✅ done | See "Frontend foundation reference" below. |
-| 6. Frontend features | ⏳ next | Replace the PlaceholderPages in `src/app/routes.tsx`. |
+| 6. Frontend features | ✅ done | Implemented task/ToDo, notes, tags, search and reminders pages, hooks and components. Optimistic task completion; 36 frontend tests. Lint, format, typecheck, tests and build pass. |
 | 7. Playwright E2E | ⬜ | Add an `e2e` job to CI in this phase. |
 | 8. Deployment | ⬜ | Railway and Vercel CLIs are installed but **not logged in**; the user must log in or connect the repo in the dashboards. |
 | 9. Final review + README | ⬜ | |
