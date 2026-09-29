@@ -7,11 +7,12 @@
 
 ---
 
-> ### ▶ RESUME HERE (last updated 2026-09-29, deployment awaiting account setup)
+> ### ▶ RESUME HERE (last updated 2026-09-29, Render/Neon/Vercel deployment setup)
 > - **Phases 1–7 are complete and pushed.** The latest verified CI run before Phase 9 docs is
 >   `36600918487` (all four jobs green); Phase 8 config commit is `67723ea`.
-> - **Phase 8 needs the user to connect the repository in Railway and Vercel**, create PostgreSQL,
->   set the documented variables, and provide the generated public domains. Do not ask for secrets.
+> - Railway's API degradation blocked deployment. Hosting is now Render (API) + Neon (PostgreSQL) +
+>   Vercel (frontend); `render.yaml` is prepared. Phase 8 needs the user to connect the repo and create
+>   the hosted services, set provider variables, and share only the public domains (never credentials).
 > - **Phase 9 local work is prepared:** clean-clone checks passed; README and deterministic E2E
 >   screenshots are added. Still needed: public links, live task/note verification, final README
 >   links, final push/CI and mark phases 8–9 complete.
@@ -115,7 +116,7 @@ short checklist of anything they must click or paste themselves in Vercel or Rai
 | 5. Frontend foundation | ✅ done | See "Frontend foundation reference" below. |
 | 6. Frontend features | ✅ done | Implemented task/ToDo, notes, tags, search and reminders pages, hooks and components. Optimistic task completion; 36 frontend tests. Commit `e01d249` pushed; CI green. |
 | 7. Playwright E2E | ✅ done | Three browser flows pass locally. Added a fresh temporary SQLite webServer setup and an E2E CI job; commit `44a1c2d` pushed and all four CI jobs pass. |
-| 8. Deployment | ⏳ in progress | Added `backend/Dockerfile`, `.dockerignore`, Railway health/restart settings and Vercel SPA rewrites (commit `67723ea`, CI green). Live Railway/Vercel setup and verification need the user to connect the repo and set deployment variables in their dashboards. Docker and hosting CLIs are unavailable locally. |
+| 8. Deployment | ⏳ in progress | Railway's API degradation blocked deployment, so the user approved Render (API) + Neon (PostgreSQL), with Vercel frontend. Added root `render.yaml`; backend SQLite/PG suites, frontend checks/build, E2E, and YAML parsing pass. Still needs provider account setup, domains, and live verification. |
 | 9. Final review + README | ⏳ in progress | Clean-clone setup, checks, migrations, both database test suites, frontend tests/build and E2E passed. README and three deterministic screenshots added; waiting for deployed URLs to finish README and live verification. |
 
 ### Frontend foundation reference (Phase 5, done)
@@ -325,13 +326,15 @@ Each feature folder has `api.ts`, `hooks.ts`, `components/` and `pages/`.
 - `backend/Dockerfile`: python:3.12-slim with uv. Install with `uv sync --locked --no-dev`, then
   `CMD sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"`.
   Add `.dockerignore`.
-- `backend/railway.json`: DOCKERFILE builder, healthcheck `/health`, restart on failure.
+- `render.yaml`: Render Docker web service built from `backend/Dockerfile`, Frankfurt region, `/health` check.
 - `frontend/vercel.json`: SPA rewrite of `/(.*)` → `/index.html`.
-- The user must log in to Railway and Vercel (`railway login`, `vercel login`), or connect the GitHub
-  repo in each dashboard. Railway: set Root Directory `backend`, add PostgreSQL, and set the vars
-  `DATABASE_URL=${{Postgres.DATABASE_URL}}`, `APP_ENV=production` and
-  `ALLOWED_ORIGINS=https://<vercel-domain>`. Vercel: Root Directory `frontend` and
-  `VITE_API_URL=https://<railway-domain>`.
+- Create Neon PostgreSQL 16 (Frankfurt); keep its pooled connection string in provider settings only.
+- Import the repo in Vercel with Root Directory `frontend` to get its site domain. The first build may
+  use the default API URL; set the final API URL after Render is ready.
+- In Render, use **New → Blueprint**, connect `[repository-owner]/Tisket`, and deploy the root `render.yaml`.
+  Set `DATABASE_URL`, `APP_ENV=production`, and `ALLOWED_ORIGINS=https://<vercel-domain>` in Render.
+- In Vercel, set `VITE_API_URL=https://<render-domain>` and redeploy. Keep credentials in provider
+  settings; do not send them in chat.
 - Verify live by creating a task and a note through the public UI. Give the user both URLs and the
   click/paste checklist.
 

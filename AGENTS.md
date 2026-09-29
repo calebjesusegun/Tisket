@@ -41,7 +41,7 @@ Features:
 | API tests | pytest + httpx (FastAPI `TestClient`) + pytest-cov | Fast, readable tests with coverage gate (≥ 80 %). |
 | UI tests | Vitest + React Testing Library + MSW | Vite-native test runner; MSW mocks HTTP at the network layer so hooks are tested realistically. |
 | E2E tests | Playwright | Reliable cross-browser flows run against the real backend. |
-| Hosting | Vercel (frontend), Railway (API + PostgreSQL) | Git-based deploys, managed PostgreSQL, simple env var management. |
+| Hosting | Vercel (frontend), Render (API), Neon (PostgreSQL) | Git-based deploys, managed services, free tiers for getting the shared app live; Render free services sleep when idle and Neon free usage is capped. |
 | Frontend tooling | oxlint, Prettier | oxlint ships with the current Vite template, is very fast, and includes the react-hooks and jsx-a11y rules we need. |
 | CI | GitHub Actions | Runs lint, type-check, unit, PostgreSQL and E2E tests on every push. |
 
@@ -51,6 +51,7 @@ Features:
 Tisket/
 ├── AGENTS.md                  # this file
 ├── README.md                  # user-facing overview, screenshots, live links
+├── render.yaml                # Render API service Blueprint
 ├── .github/workflows/ci.yml   # CI: backend (sqlite + postgres), frontend, e2e
 ├── backend/
 │   ├── pyproject.toml         # deps + ruff/mypy/pytest/coverage config
@@ -58,7 +59,6 @@ Tisket/
 │   ├── alembic.ini
 │   ├── alembic/               # env.py + versions/ (migrations)
 │   ├── Dockerfile             # production image; runs migrations on start
-│   ├── railway.json           # Railway build/deploy config
 │   ├── .env.example           # env var names (no secrets)
 │   ├── app/
 │   │   ├── main.py            # create_app() app factory + module-level `app`
@@ -132,8 +132,8 @@ Tisket/
 - **Tests**: written with each feature. Never delete or weaken a test to make it pass; fix the cause.
 - **Commits**: small, imperative mood (`Add tasks API`), one concern per commit.
 - **Secrets**: never committed — not even throwaway ones. Only `.env.example` files with names are in git.
-  CI databases use passwordless `trust` auth; real credentials live only in Railway/Vercel/GitHub
-  secrets settings.
+  CI databases use passwordless `trust` auth; real credentials live only in Render/Neon/Vercel/GitHub
+  provider settings.
 
 ## 6. Commands
 
@@ -203,14 +203,14 @@ Backend:
 | `APP_ENV` | `development`, `test` or `production` | `production` |
 | `DATABASE_URL` | SQLAlchemy URL. `postgres://` / `postgresql://` are rewritten to `postgresql+psycopg://` automatically. | `postgresql://user:pass@host:5432/db` |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins. In production set it to the Vercel URL only. | `https://tisket.vercel.app` |
-| `PORT` | Port uvicorn binds to (set by Railway). | `8000` |
+| `PORT` | Port uvicorn binds to (set by Render). | `8000` |
 | `TEST_DATABASE_URL` | Tests only: run the suite against PostgreSQL instead of SQLite. | — |
 
 Frontend:
 
 | Name | Purpose |
 | --- | --- |
-| `VITE_API_URL` | Base URL of the backend (no trailing slash), e.g. the Railway URL. |
+| `VITE_API_URL` | Base URL of the backend (no trailing slash), e.g. the Render URL. |
 
 ## 9. Testing approach
 
@@ -233,23 +233,26 @@ Frontend:
 
 ## 10. Deployment
 
-Backend + database on Railway:
+Backend on Render and PostgreSQL on Neon:
 
-1. Railway → New Project → Deploy from GitHub repo → select this repo.
-2. In the service settings set **Root Directory** to `backend` (Railway then uses
-   `backend/railway.json` and `backend/Dockerfile`).
-3. Add a PostgreSQL database to the project. In the backend service variables add
-   `DATABASE_URL=${{Postgres.DATABASE_URL}}`, `APP_ENV=production`,
-   `ALLOWED_ORIGINS=https://<your-vercel-domain>`.
-4. Settings → Networking → Generate Domain. Health check path is `/health`.
-5. Every deploy runs `alembic upgrade head` before starting the server.
+1. Create a PostgreSQL 16 project in Neon (Frankfurt is a reasonable region for Render's
+   Frankfurt service), then copy its pooled connection string from the Neon dashboard.
+2. Import the repository in Vercel with root directory `frontend` to reserve the site domain. The
+   first build can use the default API URL; set the final API URL after Render creates its domain.
+3. In Render, choose **New → Blueprint**, connect this repository and deploy the root `render.yaml`.
+   It builds `backend/Dockerfile` from the `backend` directory and creates the API service. Set the
+   prompted `DATABASE_URL` to the Neon connection string and `ALLOWED_ORIGINS` to the exact Vercel
+   site origin. Keep both values in provider settings; never commit them.
+4. Render provides the API domain. Set `VITE_API_URL=https://<render-domain>` in Vercel and redeploy.
+   Render's health check is `/health`; the Docker command runs `alembic upgrade head` before starting
+   uvicorn.
 
-Frontend on Vercel:
+The free Render web service sleeps after 15 minutes without traffic and can take about a minute to
+wake. Neon Free has monthly compute and storage caps. These tiers are suitable for a live demo, not
+production reliability; check provider usage and upgrade only if desired.
 
-1. Vercel → Add New Project → import this repo, **Root Directory** `frontend`
-   (framework preset: Vite; `frontend/vercel.json` adds SPA rewrites).
-2. Add env var `VITE_API_URL=https://<your-railway-domain>` and deploy.
-3. Put the final Vercel domain into Railway's `ALLOWED_ORIGINS` and redeploy the backend.
+Vercel uses `frontend/vercel.json` for SPA rewrites. Keep the final Vercel site origin in Render's
+`ALLOWED_ORIGINS` and the Render API origin in Vercel's `VITE_API_URL`.
 
 ## 11. Decisions log
 
@@ -271,3 +274,4 @@ Frontend on Vercel:
 | 2026-09-29 | Reminders are three paginated endpoints (`/reminders/due-soon`, `/overdue`, `/notifications`) plus `POST /{id}/dismiss` and `/dismiss-all`. | Keeps every list endpoint paginated and lets the UI fetch each section independently. |
 | 2026-09-29 | The initial migration's FTS index was edited in place (weights added) before the first deploy. | No database outside local dev/CI had applied it; after deploy, schema changes must be new migrations. |
 | 2026-09-29 | MSW for frontend HTTP mocking. | Tests hooks and pages through the real API client instead of mocking modules. |
+| 2026-09-29 | Deployment changed from Railway to Render + Neon; Vercel remains the frontend host. | Railway's API incident was blocking deployment. Render and Neon provide a path to get a live demo running without changing the application stack; free tiers have sleep/usage limits. |

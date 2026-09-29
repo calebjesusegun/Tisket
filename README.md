@@ -6,7 +6,7 @@ login: everyone who opens the app sees and edits the same data.
 ## Live app
 
 Deployment is being configured. The public frontend and API links will be added here after the
-Railway and Vercel projects are connected and verified.
+Render, Neon and Vercel services are connected and verified.
 
 ## Screenshots
 
@@ -100,17 +100,18 @@ PostgreSQL, frontend checks, and the Playwright suite on pushes and pull request
 
 ## Deployment
 
-The backend is configured for Railway using `backend/Dockerfile` and `backend/railway.json`; the
-frontend is configured for Vercel using `frontend/vercel.json`. Configure these variables in the
-hosting dashboards:
+The backend is configured for Render using `render.yaml` and `backend/Dockerfile`; PostgreSQL is
+hosted on Neon, and the frontend is configured for Vercel using `frontend/vercel.json`. Configure
+these variables in the hosting dashboards:
 
 | Service         | Variable          | Value                                                             |
 | --------------- | ----------------- | ----------------------------------------------------------------- |
-| Railway API     | `DATABASE_URL`    | `${{Postgres.DATABASE_URL}}`                                      |
-| Railway API     | `APP_ENV`         | `production`                                                      |
-| Railway API     | `ALLOWED_ORIGINS` | The Vercel site origin, such as `https://your-project.vercel.app` |
-| Vercel frontend | `VITE_API_URL`    | The Railway API origin, such as `https://your-api.up.railway.app` |
+| Render API      | `DATABASE_URL`    | Neon pooled PostgreSQL connection string                         |
+| Render API      | `APP_ENV`         | `production`                                                      |
+| Render API      | `ALLOWED_ORIGINS` | The Vercel site origin, such as `https://your-project.vercel.app` |
+| Vercel frontend | `VITE_API_URL`    | The Render API origin, such as `https://tisket-api.onrender.com`  |
 
-Use `backend` as Railway's root directory and `frontend` as Vercel's root directory. Set the final
-Vercel origin in Railway's `ALLOWED_ORIGINS`, then redeploy the API. Keep credentials in the hosting
-provider's environment settings; do not commit them.
+Render's root-level Blueprint builds the API from `backend/`; use `frontend` as Vercel's root
+directory. Set the final Vercel origin in Render's `ALLOWED_ORIGINS`, then redeploy the API. Render's
+free service may sleep when idle, and Neon Free has monthly usage caps. Keep credentials in provider
+environment settings; do not commit them.
