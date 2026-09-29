@@ -24,3 +24,6 @@ htmlcov/
 
 # Node
 node_modules/
+
+# Local agent tooling
+.claude/
