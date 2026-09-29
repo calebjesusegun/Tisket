@@ -5,8 +5,12 @@ login: everyone who opens the app sees and edits the same data.
 
 ## Live app
 
-Deployment is being configured. The public frontend and API links will be added here after the
-Render, Neon and Vercel services are connected and verified.
+- **App:** [tisket-sepia.vercel.app](https://tisket-sepia.vercel.app)
+- **API health:** [tisket-api.onrender.com/health](https://tisket-api.onrender.com/health)
+- **API docs:** [tisket-api.onrender.com/docs](https://tisket-api.onrender.com/docs)
+
+The live API health check returned `status: ok` and `database: ok`; the frontend returned HTTP 200.
+Tisket has no login and uses one shared workspace, so do not store private information in it.
 
 ## Screenshots
 
@@ -108,8 +112,8 @@ these variables in the hosting dashboards:
 | --------------- | ----------------- | ----------------------------------------------------------------- |
 | Render API      | `DATABASE_URL`    | Neon pooled PostgreSQL connection string                         |
 | Render API      | `APP_ENV`         | `production`                                                      |
-| Render API      | `ALLOWED_ORIGINS` | The Vercel site origin, such as `https://your-project.vercel.app` |
-| Vercel frontend | `VITE_API_URL`    | The Render API origin, such as `https://tisket-api.onrender.com`  |
+| Render API      | `ALLOWED_ORIGINS` | `https://tisket-sepia.vercel.app`                                 |
+| Vercel frontend | `VITE_API_URL`    | `https://tisket-api.onrender.com`                                 |
 
 Render's root-level Blueprint builds the API from `backend/`; use `frontend` as Vercel's root
 directory. Set the final Vercel origin in Render's `ALLOWED_ORIGINS`, then redeploy the API. Render's

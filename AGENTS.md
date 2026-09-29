@@ -265,7 +265,7 @@ Vercel uses `frontend/vercel.json` for SPA rewrites. Keep the final Vercel site 
 | 2026-09-29 | Search highlights returned as structured segments `[{"text", "match"}]`, not HTML. | The UI renders `<mark>` itself, so no `dangerouslySetInnerHTML` and no XSS risk. PostgreSQL uses `ts_headline` with private-use delimiter characters, SQLite uses a case-insensitive regex. |
 | 2026-09-29 | Tag names normalised (trimmed, lower-case, internal whitespace → `-`, max 30 chars) and unique. | "Work", " work " and "WORK" are the same tag; avoids duplicates when tags are created on the fly. |
 | 2026-09-29 | Notifications = tasks that are due (due time ≤ now), not done, and not dismissed since they became due. Dismissal is stored on the task (`reminder_dismissed_at`). | Shared workspace has no users, so dismissal is global; the frontend polls every 60 s. |
-| 2026-09-29 | Migrations run in the container start command. | Guarantees schema is current before the app serves traffic on every Railway deploy. |
+| 2026-09-29 | Migrations run in the container start command. | Guarantees schema is current before the app serves traffic on every Render deploy. |
 | 2026-09-29 | oxlint instead of ESLint for the frontend. | It is the Vite template default, runs in milliseconds, and covers react-hooks, jsx-a11y and TypeScript rules. |
 | 2026-09-29 | SQLAlchemy pinned to `>=2.0.40,<2.1`. | The brief specifies SQLAlchemy 2.0; uv would otherwise resolve 2.1. |
 | 2026-09-29 | CI PostgreSQL service uses `POSTGRES_HOST_AUTH_METHOD: trust` with no password. | Keeps every credential, even disposable ones, out of the repository. |
