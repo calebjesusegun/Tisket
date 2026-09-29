@@ -159,7 +159,8 @@ All commands are run from the repository root unless stated. Prerequisites: `uv`
 Local PostgreSQL (one-time):
 
 ```bash
-/opt/homebrew/opt/postgresql@16/bin/initdb -D ~/.tisket-pg -U postgres --auth=trust
+export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8   # macOS: postgres refuses to start without a valid locale
+/opt/homebrew/opt/postgresql@16/bin/initdb -D ~/.tisket-pg -U postgres --auth=trust --locale=en_US.UTF-8
 /opt/homebrew/opt/postgresql@16/bin/pg_ctl -D ~/.tisket-pg -l ~/.tisket-pg/log start
 createdb -h localhost -U postgres tisket
 createdb -h localhost -U postgres tisket_test
@@ -187,6 +188,9 @@ createdb -h localhost -U postgres tisket_test
   `uv run alembic revision --autogenerate -m "..."`, review the generated file, and commit it.
 - PostgreSQL-only objects (the full-text GIN indexes) are created inside
   `if op.get_bind().dialect.name == "postgresql"` blocks so migrations also run on SQLite.
+  Their names are listed in `app/db/manual_indexes.py` so autogenerate does not try to drop them.
+- `tests/unit/test_migrations.py` fails if the migrated schema drifts from the models, so a
+  forgotten migration is caught in CI (on SQLite and on PostgreSQL).
 - Migrations run automatically on deploy: the Docker `CMD` runs `alembic upgrade head` before
   starting uvicorn.
 
