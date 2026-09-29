@@ -326,9 +326,9 @@ Each feature folder has `api.ts`, `hooks.ts`, `components/` and `pages/`.
 - `backend/Dockerfile`: python:3.12-slim with uv. Install with `uv sync --locked --no-dev`, then
   `CMD sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"`.
   Add `.dockerignore`.
-- `render.yaml`: Render Docker web service built from `backend/Dockerfile`, Frankfurt region, `/health` check.
+- `render.yaml`: Render Docker web service built from `backend/Dockerfile`, Ohio region, `/health` check.
 - `frontend/vercel.json`: SPA rewrite of `/(.*)` → `/index.html`.
-- Create Neon PostgreSQL 16 (Frankfurt); keep its pooled connection string in provider settings only.
+- Create the Neon PostgreSQL project in Ohio; keep its pooled connection string in provider settings only.
 - Import the repo in Vercel with Root Directory `frontend` to get its site domain. The first build may
   use the default API URL; set the final API URL after Render is ready.
 - In Render, use **New → Blueprint**, connect `[repository-owner]/Tisket`, and deploy the root `render.yaml`.

@@ -235,8 +235,8 @@ Frontend:
 
 Backend on Render and PostgreSQL on Neon:
 
-1. Create a PostgreSQL 16 project in Neon (Frankfurt is a reasonable region for Render's
-   Frankfurt service), then copy its pooled connection string from the Neon dashboard.
+1. Create a PostgreSQL project in Neon in the Ohio region, then copy its pooled connection string
+   from the Neon dashboard.
 2. Import the repository in Vercel with root directory `frontend` to reserve the site domain. The
    first build can use the default API URL; set the final API URL after Render creates its domain.
 3. In Render, choose **New → Blueprint**, connect this repository and deploy the root `render.yaml`.
