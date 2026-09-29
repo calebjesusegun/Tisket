@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test'
+import { mkdir } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
 
 test('search tasks and notes and render highlighted matches', async ({ page }) => {
   await page.goto('/tasks')
@@ -9,4 +11,7 @@ test('search tasks and notes and render highlighted matches', async ({ page }) =
   await page.getByRole('search').getByRole('searchbox').press('Enter')
   await expect(page.getByRole('heading', { name: 'Search' })).toBeVisible()
   await expect(page.locator('mark', { hasText: 'constellation' })).toBeVisible()
+  const screenshot = resolve(process.cwd(), '../docs/screenshots/search.png')
+  await mkdir(dirname(screenshot), { recursive: true })
+  await page.screenshot({ path: screenshot, fullPage: true })
 })

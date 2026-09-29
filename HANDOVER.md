@@ -7,14 +7,14 @@
 
 ---
 
-> ### ▶ RESUME HERE (last updated 2026-09-29, Phase 8 deployment setup)
-> - **Phases 1–7 are done and pushed**, with all four CI jobs green (Phase 7 run `36600445816`).
-> - **Phase 8 setup is ready; live deployment is waiting on user dashboard access.** Docker,
->   Railway and Vercel configuration has been added. Docker and the Railway/Vercel CLIs are not
->   available in this environment; local E2E is green and CI is green.
-> - Next action: user connects the GitHub repo in Railway and Vercel dashboards, sets the listed
->   root directories and environment variables, and shares the generated public domains (never
->   share credentials in chat). Then continue deployment/live verification and Phase 9.
+> ### ▶ RESUME HERE (last updated 2026-09-29, deployment awaiting account setup)
+> - **Phases 1–7 are complete and pushed.** The latest verified CI run before Phase 9 docs is
+>   `36600918487` (all four jobs green); Phase 8 config commit is `67723ea`.
+> - **Phase 8 needs the user to connect the repository in Railway and Vercel**, create PostgreSQL,
+>   set the documented variables, and provide the generated public domains. Do not ask for secrets.
+> - **Phase 9 local work is prepared:** clean-clone checks passed; README and deterministic E2E
+>   screenshots are added. Still needed: public links, live task/note verification, final README
+>   links, final push/CI and mark phases 8–9 complete.
 > - Backend baseline remains 187 SQLite tests (96.7 % coverage) and 189 PostgreSQL tests.
 
 ## 0. Your job
@@ -115,8 +115,8 @@ short checklist of anything they must click or paste themselves in Vercel or Rai
 | 5. Frontend foundation | ✅ done | See "Frontend foundation reference" below. |
 | 6. Frontend features | ✅ done | Implemented task/ToDo, notes, tags, search and reminders pages, hooks and components. Optimistic task completion; 36 frontend tests. Commit `e01d249` pushed; CI green. |
 | 7. Playwright E2E | ✅ done | Three browser flows pass locally. Added a fresh temporary SQLite webServer setup and an E2E CI job; commit `44a1c2d` pushed and all four CI jobs pass. |
-| 8. Deployment | ⏳ in progress | Added `backend/Dockerfile`, `.dockerignore`, Railway health/restart settings and Vercel SPA rewrites. Live Railway/Vercel setup and verification need the user to connect the repo and set deployment variables in their dashboards. Docker and hosting CLIs are unavailable locally. |
-| 9. Final review + README | ⬜ | |
+| 8. Deployment | ⏳ in progress | Added `backend/Dockerfile`, `.dockerignore`, Railway health/restart settings and Vercel SPA rewrites (commit `67723ea`, CI green). Live Railway/Vercel setup and verification need the user to connect the repo and set deployment variables in their dashboards. Docker and hosting CLIs are unavailable locally. |
+| 9. Final review + README | ⏳ in progress | Clean-clone setup, checks, migrations, both database test suites, frontend tests/build and E2E passed. README and three deterministic screenshots added; waiting for deployed URLs to finish README and live verification. |
 
 ### Frontend foundation reference (Phase 5, done)
 
