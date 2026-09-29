@@ -7,6 +7,15 @@
 
 ---
 
+> ### ▶ RESUME HERE (last updated 2026-09-29, after Phase 5)
+> - **Phases 1–5 are done**, committed and pushed (last commit `91e609a`). CI is green on all 3 jobs.
+> - **Next: Phase 6 (frontend features).** Start by replacing the `PlaceholderPage` routes in
+>   `frontend/src/app/routes.tsx`, one feature at a time: tasks → tags → notes → search → reminders.
+>   Follow the "Phase 6" plan in section 4 and write tests with each feature.
+> - The working tree is clean, with no uncommitted work. Backend: 187 tests (96.7 % coverage), plus
+>   189 on PostgreSQL. Frontend: 28 tests.
+> - Before coding, run the verification commands in section 3 to confirm everything is still green.
+
 ## 0. Your job
 
 You are continuing the implementation of **Tisket**, a ToDo, Tasks and Notes web app, in the repo at
