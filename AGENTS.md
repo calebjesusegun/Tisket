@@ -131,7 +131,9 @@ Tisket/
 - **Styling**: Tailwind utilities only; shared look lives in `src/components`.
 - **Tests**: written with each feature. Never delete or weaken a test to make it pass; fix the cause.
 - **Commits**: small, imperative mood (`Add tasks API`), one concern per commit.
-- **Secrets**: never committed. Only `.env.example` files with names are in git.
+- **Secrets**: never committed — not even throwaway ones. Only `.env.example` files with names are in git.
+  CI databases use passwordless `trust` auth; real credentials live only in Railway/Vercel/GitHub
+  secrets settings.
 
 ## 6. Commands
 
@@ -256,4 +258,5 @@ Frontend on Vercel:
 | 2026-09-29 | Migrations run in the container start command. | Guarantees schema is current before the app serves traffic on every Railway deploy. |
 | 2026-09-29 | oxlint instead of ESLint for the frontend. | It is the Vite template default, runs in milliseconds, and covers react-hooks, jsx-a11y and TypeScript rules. |
 | 2026-09-29 | SQLAlchemy pinned to `>=2.0.40,<2.1`. | The brief specifies SQLAlchemy 2.0; uv would otherwise resolve 2.1. |
+| 2026-09-29 | CI PostgreSQL service uses `POSTGRES_HOST_AUTH_METHOD: trust` with no password. | Keeps every credential, even disposable ones, out of the repository. |
 | 2026-09-29 | MSW for frontend HTTP mocking. | Tests hooks and pages through the real API client instead of mocking modules. |

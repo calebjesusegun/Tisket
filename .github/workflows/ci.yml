@@ -36,18 +36,19 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: tisket
+          # Throwaway container that only lives for this job; trust auth means no
+          # credential is stored in the repository.
           POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_DB: tisket_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U tisket"
+          --health-cmd "pg_isready -U postgres"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
-      TEST_DATABASE_URL: postgresql+psycopg://tisket@localhost:5432/tisket_test
+      TEST_DATABASE_URL: postgresql+psycopg://postgres@localhost:5432/tisket_test
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
