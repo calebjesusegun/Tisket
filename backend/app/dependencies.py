@@ -8,7 +8,11 @@ from sqlalchemy.orm import Session
 
 from app.core.clock import Clock, SystemClock
 from app.core.config import Settings
+from app.repositories.tag_repository import TagRepository
+from app.repositories.task_repository import TaskRepository
 from app.schemas.common import PageParams
+from app.services.tag_service import TagService
+from app.services.task_service import TaskService
 
 
 def get_settings_dep(request: Request) -> Settings:
@@ -38,3 +42,20 @@ def get_page_params(
 DbSession = Annotated[Session, Depends(get_db)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
 PageParamsDep = Annotated[PageParams, Depends(get_page_params)]
+
+
+# --- Repositories and services -------------------------------------------------------------
+
+
+def get_tag_service(db: DbSession) -> TagService:
+    return TagService(db, TagRepository(db))
+
+
+def get_task_service(
+    db: DbSession, clock: ClockDep, tag_service: Annotated[TagService, Depends(get_tag_service)]
+) -> TaskService:
+    return TaskService(db, TaskRepository(db), tag_service, clock)
+
+
+TagServiceDep = Annotated[TagService, Depends(get_tag_service)]
+TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]

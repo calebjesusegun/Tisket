@@ -9,7 +9,7 @@ from app import __version__
 from app.core.config import Settings, get_settings
 from app.core.errors import register_error_handlers
 from app.db.session import create_db_engine, create_session_factory
-from app.routers import health
+from app.routers import health, tags, tasks
 from app.schemas.common import ErrorResponse
 
 API_PREFIX = "/api/v1"
@@ -41,6 +41,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     register_error_handlers(app)
 
     app.include_router(health.router)
+    app.include_router(tasks.router, prefix=API_PREFIX)
+    app.include_router(tags.router, prefix=API_PREFIX)
     return app
 
 

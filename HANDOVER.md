@@ -100,8 +100,8 @@ short checklist of anything they must click or paste themselves in Vercel or Rai
 | --- | --- | --- |
 | 1. AGENTS.md, repo, lint, CI | ✅ done | CI has 3 jobs: backend SQLite, backend PostgreSQL, frontend. |
 | 2. Backend foundation | ✅ done | Models, initial migration (with PG GIN FTS indexes), app factory, errors, CORS, `/health`, 25 tests, 96 % coverage, green on SQLite and PostgreSQL. |
-| 3. Tasks + tags API | ⏳ next | Plan in section 4. |
-| 4. Notes, search, reminders API | ⬜ | |
+| 3. Tasks + tags API | ✅ done | `/api/v1/tasks` (filters: repeatable `status`, `priority`, `tag`; sort `due_at`/`priority`/`created_at`/`updated_at`/`title`) and `/api/v1/tags`. Services: `TagService`, `TaskService`, pure `services/reminder_rules.py` (is_overdue, is_due_soon, needs_notification). 121 tests, 98.6 % coverage; green on PostgreSQL. Test helpers are in `tests/factories.py`. Service list methods are named `list_tasks` and `list_tags`, and the repo uses `find`, to avoid shadowing `list`. |
+| 4. Notes, search, reminders API | ⏳ next | Use `reminder_rules` in ReminderService. `tests/factories.py::create_note` already exists. |
 | 5. Frontend foundation | ⬜ | Only a placeholder `App.tsx` plus configured tooling exists. |
 | 6. Frontend features | ⬜ | |
 | 7. Playwright E2E | ⬜ | Add an `e2e` job to CI in this phase. |
