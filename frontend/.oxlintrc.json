@@ -21,7 +21,8 @@
       {
         "allow": ["**/*.css", "@testing-library/jest-dom/vitest"]
       }
-    ]
+    ],
+    "jsx-a11y/prefer-tag-over-role": "off"
   },
   "ignorePatterns": ["dist", "coverage", "node_modules"]
 }

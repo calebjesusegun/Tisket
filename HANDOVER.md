@@ -102,11 +102,73 @@ short checklist of anything they must click or paste themselves in Vercel or Rai
 | 2. Backend foundation | ✅ done | Models, initial migration (with PG GIN FTS indexes), app factory, errors, CORS, `/health`, 25 tests, 96 % coverage, green on SQLite and PostgreSQL. |
 | 3. Tasks + tags API | ✅ done | `/api/v1/tasks` (filters: repeatable `status`, `priority`, `tag`; sort `due_at`/`priority`/`created_at`/`updated_at`/`title`) and `/api/v1/tags`. Services: `TagService`, `TaskService`, pure `services/reminder_rules.py` (is_overdue, is_due_soon, needs_notification). 121 tests, 98.6 % coverage; green on PostgreSQL. Test helpers are in `tests/factories.py`. Service list methods are named `list_tasks` and `list_tags`, and the repo uses `find`, to avoid shadowing `list`. |
 | 4. Notes, search, reminders API | ✅ done | `/api/v1/notes` (filters tag/pinned/task_id, pinned first), `/api/v1/search?q=&type=all|task|note` (segments in `title_highlights` and `snippet`), `/api/v1/reminders/{due-soon?hours=,overdue,notifications}` (all `Page[TaskRead]`), `POST /reminders/{id}/dismiss` → TaskRead, `POST /reminders/dismiss-all` → `{dismissed}`. 187 tests on SQLite (96.7 %), 189 on PG, including an EXPLAIN check that the GIN index is used. **The backend API is complete.** |
-| 5. Frontend foundation | ⏳ next | Only a placeholder `App.tsx` plus configured tooling exists. See `/docs` on the running backend for exact API shapes. |
+| 5. Frontend foundation | 🚧 in progress | See "Phase 5 status" below. |
 | 6. Frontend features | ⬜ | |
 | 7. Playwright E2E | ⬜ | Add an `e2e` job to CI in this phase. |
 | 8. Deployment | ⬜ | Railway and Vercel CLIs are installed but **not logged in**; the user must log in or connect the repo in the dashboards. |
 | 9. Final review + README | ⬜ | |
+
+### Phase 5 status (last updated mid-phase)
+
+**Written** (committed as a WIP commit, "WIP: frontend foundation"; check `git log`):
+- `src/lib/`:
+  - `types.ts`: TS mirrors of every API schema, including `Task`, `Note`, `Tag`, `TagWithCounts`,
+    `Page<T>`, `SearchResult`, `HighlightSegment`, `TaskFilters`, `NoteFilters`, `TaskInput` and
+    `NoteInput`.
+  - `api-client.ts`: `request<T>(path, {method, body, query, signal})` prefixes
+    `VITE_API_URL` + `/api/v1`. Array query values become repeated params. It throws
+    `ApiError(status, code, message, details)`, and a network failure becomes `code: 'network_error'`,
+    `status: 0`. Also exports `buildUrl` and `errorMessage(err)`.
+  - `query-client.ts`: `createQueryClient()` with staleTime 30 s, no retries on 4xx, and one retry
+    otherwise.
+  - `format.ts`: `formatDateTime`, `formatRelative`, `toLocalInput(iso)`, `fromLocalInput(value)`.
+    The last two convert between UTC ISO strings and `datetime-local` values.
+  - `cn.ts`: class joiner.
+- `src/components/`:
+  - `Button` (variants primary/secondary/ghost/danger, sizes sm/md).
+  - `Field.tsx`: `TextInput`, `TextArea` and `SelectInput`, each with label, error and hint wired via
+    aria. They take a `ref` prop (React 19 style), so they work with RHF `register`.
+  - `Badge` (tones slate/indigo/green/amber/red/sky).
+  - `States.tsx`: `LoadingState`, `EmptyState`, `ErrorState({message, onRetry})`.
+  - `Modal({open, title, onClose})`: Esc closes and focus goes to the first field.
+  - `Toast.tsx` has `ToastProvider`, and `toast-context.ts` has `useToast().notify(msg, tone)`.
+  - `icons.tsx`: inline SVG icons.
+- `src/app/`:
+  - `App.tsx`: ErrorBoundary › QueryClientProvider › ToastProvider › RouterProvider.
+    `RouterProvider` is imported from `react-router/dom`; the version is react-router v8.
+  - `routes.tsx`: route objects. All pages are still `PlaceholderPage`, and Phase 6 replaces them.
+  - `Layout.tsx`: desktop sidebar, mobile bottom nav, sticky header with `SearchBox`, and a
+    `headerActions` prop meant for the NotificationBell.
+  - `ErrorBoundary.tsx` (class component plus `RouteErrorPage`), `PageHeader.tsx`,
+    `NotFoundPage.tsx`, `PlaceholderPage.tsx`.
+- `src/features/search/components/SearchBox.tsx`: submitting navigates to `/search?q=`.
+- `src/vite-env.d.ts` types `VITE_API_URL`.
+
+**Still to do in Phase 5:**
+1. ~~Lint, typecheck, format~~: done, all clean. `jsx-a11y/prefer-tag-over-role` is turned off in
+   `.oxlintrc.json` on purpose, and `NAV_ITEMS` lives in `src/app/nav.ts`. `SearchBox` remounts its
+   inner form via `key` instead of a setState-in-effect. `App.test.tsx` now asserts the redirect to
+   the ToDo page and passes, and `npm run build` passes.
+2. Test utilities in `src/test/`:
+   - Extend `setup.ts` to start an MSW `setupServer` (`msw/node`) with
+     `onUnhandledRequest: 'error'`, and reset handlers after each test.
+   - `handlers.ts` holds default handlers for `http://localhost:8000/api/v1/*`.
+   - `utils.tsx` holds `renderWithProviders(ui, {route})`, which uses `createMemoryRouter` with
+     `routes` or a custom element, a fresh `createQueryClient()` with `retry: false`, and
+     `ToastProvider`.
+   - Also factories for `Task` and `Note` objects.
+3. Tests:
+   - `lib/api-client.test.ts`: query building, arrays, JSON body, 204 handling, `ApiError` from the
+     error body, a non-JSON error, and a network error.
+   - `lib/format.test.ts`.
+   - `app/Layout.test.tsx`: nav links render, and the SearchBox navigates to `/search?q=`.
+   - `app/ErrorBoundary.test.tsx`: a child that throws shows the fallback, and "Try again" resets.
+   - Components: Modal (Esc closes) and Field (shows the error with `aria-invalid`).
+   - Replace the old `App.test.tsx`, which expects a "Tisket" heading, or update it to render the app
+     via memory router and assert the ToDo page or redirect.
+4. Run `npm test`, `npm run build`, and a manual check with `npm run dev` against the backend
+   (`uv run uvicorn app.main:app --reload` using the local PG `tisket` DB).
+5. Commit, mark Phase 5 ✅ here, push, and check CI.
 
 **To find the exact resume point:** a phase whose code exists but isn't marked ✅ may be half done.
 Run the test suites (section 3). Anything missing from the section 4 plan for that phase is still to
