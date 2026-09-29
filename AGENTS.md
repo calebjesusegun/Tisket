@@ -226,7 +226,9 @@ Frontend:
   and key components/pages.
 - **E2E** (`frontend/e2e`): Playwright starts the real backend (fresh SQLite file DB, migrated with
   Alembic) and a production build of the frontend. Flows: create a task, create a note with tags,
-  search.
+  search. Configuration lives in `frontend/playwright.config.ts`; the database file is unique per
+  Playwright run and stored under `/tmp` so E2E runs start from an empty workspace. CI installs
+  Chromium and runs `npm run e2e` in a separate job.
 
 ## 10. Deployment
 
