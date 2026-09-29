@@ -1,7 +1,9 @@
-from sqlalchemy import Select, case, func, select
+from datetime import datetime
+
+from sqlalchemy import Select, case, func, or_, select
 from sqlalchemy.orm import Session
 
-from app.models import Tag, Task, TaskPriority
+from app.models import Tag, Task, TaskPriority, TaskStatus
 from app.models.enums import PRIORITY_RANK
 from app.schemas.common import PageParams
 from app.schemas.task import TaskFilters
@@ -69,3 +71,43 @@ class TaskRepository:
         }[filters.sort]
         tiebreak = Task.id.desc() if descending else Task.id.asc()
         return stmt.order_by(sort_column.desc() if descending else sort_column.asc(), tiebreak)
+
+    # --- reminder queries -----------------------------------------------------------------
+
+    def _open_with_due_date(self) -> Select[tuple[Task]]:
+        return select(Task).where(Task.status != TaskStatus.DONE, Task.due_at.is_not(None))
+
+    def _page(self, stmt: Select[tuple[Task]], page: PageParams) -> tuple[list[Task], int]:
+        total = self.session.scalar(select(func.count()).select_from(stmt.subquery())) or 0
+        items = self.session.scalars(stmt.offset(page.offset).limit(page.page_size))
+        return list(items), total
+
+    def find_due_between(
+        self, start: datetime, end: datetime, page: PageParams
+    ) -> tuple[list[Task], int]:
+        stmt = (
+            self._open_with_due_date()
+            .where(Task.due_at >= start, Task.due_at <= end)
+            .order_by(Task.due_at.asc(), Task.id)
+        )
+        return self._page(stmt, page)
+
+    def find_overdue(self, now: datetime, page: PageParams) -> tuple[list[Task], int]:
+        stmt = (
+            self._open_with_due_date().where(Task.due_at < now).order_by(Task.due_at.asc(), Task.id)
+        )
+        return self._page(stmt, page)
+
+    def _notifications(self, now: datetime) -> Select[tuple[Task]]:
+        # Same rule as reminder_rules.needs_notification, expressed in SQL.
+        return self._open_with_due_date().where(
+            Task.due_at <= now,
+            or_(Task.reminder_dismissed_at.is_(None), Task.reminder_dismissed_at < Task.due_at),
+        )
+
+    def find_notifications(self, now: datetime, page: PageParams) -> tuple[list[Task], int]:
+        stmt = self._notifications(now).order_by(Task.due_at.desc(), Task.id.desc())
+        return self._page(stmt, page)
+
+    def all_notifications(self, now: datetime) -> list[Task]:
+        return list(self.session.scalars(self._notifications(now)))

@@ -8,9 +8,14 @@ from sqlalchemy.orm import Session
 
 from app.core.clock import Clock, SystemClock
 from app.core.config import Settings
+from app.repositories.note_repository import NoteRepository
+from app.repositories.search_repository import SearchRepository
 from app.repositories.tag_repository import TagRepository
 from app.repositories.task_repository import TaskRepository
 from app.schemas.common import PageParams
+from app.services.note_service import NoteService
+from app.services.reminder_service import ReminderService
+from app.services.search_service import SearchService
 from app.services.tag_service import TagService
 from app.services.task_service import TaskService
 
@@ -59,3 +64,20 @@ def get_task_service(
 
 TagServiceDep = Annotated[TagService, Depends(get_tag_service)]
 TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]
+
+
+def get_note_service(db: DbSession, tag_service: TagServiceDep) -> NoteService:
+    return NoteService(db, NoteRepository(db), TaskRepository(db), tag_service)
+
+
+def get_search_service(db: DbSession, clock: ClockDep) -> SearchService:
+    return SearchService(SearchRepository(db), clock)
+
+
+def get_reminder_service(db: DbSession, clock: ClockDep) -> ReminderService:
+    return ReminderService(db, TaskRepository(db), clock)
+
+
+NoteServiceDep = Annotated[NoteService, Depends(get_note_service)]
+SearchServiceDep = Annotated[SearchService, Depends(get_search_service)]
+ReminderServiceDep = Annotated[ReminderService, Depends(get_reminder_service)]

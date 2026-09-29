@@ -1,5 +1,7 @@
 """Task rules: completion timestamps, reminder reset on new due dates, tags on the fly."""
 
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock
@@ -10,6 +12,13 @@ from app.schemas.common import Page, PageParams
 from app.schemas.task import TaskCreate, TaskFilters, TaskRead, TaskUpdate
 from app.services import reminder_rules
 from app.services.tag_service import TagService, normalize_tag_name
+
+
+def task_to_read(task: Task, now: datetime) -> TaskRead:
+    read = TaskRead.model_validate(task)
+    read.is_overdue = reminder_rules.is_overdue(task, now)
+    read.is_due_soon = reminder_rules.is_due_soon(task, now)
+    return read
 
 
 class TaskService:
@@ -26,11 +35,7 @@ class TaskService:
         self.clock = clock
 
     def to_read(self, task: Task) -> TaskRead:
-        now = self.clock.now()
-        read = TaskRead.model_validate(task)
-        read.is_overdue = reminder_rules.is_overdue(task, now)
-        read.is_due_soon = reminder_rules.is_due_soon(task, now)
-        return read
+        return task_to_read(task, self.clock.now())
 
     def get(self, task_id: int) -> Task:
         task = self.repository.get(task_id)

@@ -263,4 +263,8 @@ Frontend on Vercel:
 | 2026-09-29 | oxlint instead of ESLint for the frontend. | It is the Vite template default, runs in milliseconds, and covers react-hooks, jsx-a11y and TypeScript rules. |
 | 2026-09-29 | SQLAlchemy pinned to `>=2.0.40,<2.1`. | The brief specifies SQLAlchemy 2.0; uv would otherwise resolve 2.1. |
 | 2026-09-29 | CI PostgreSQL service uses `POSTGRES_HOST_AUTH_METHOD: trust` with no password. | Keeps every credential, even disposable ones, out of the repository. |
+| 2026-09-29 | Search uses prefix matching (`to_tsquery('english', 'term:*' & …)`), all terms required; title weighted A, body B. | Search-as-you-type finds "groceries" from "groc"; title hits rank first, matching the SQLite fallback. Terms are reduced to `\w+` words, so users cannot inject tsquery operators. |
+| 2026-09-29 | The tsvector expression is emitted as literal SQL (not bound params) and a PostgreSQL test runs `EXPLAIN` to assert the GIN index is used. | Parameterised expressions would not match the index expression, silently causing sequential scans. |
+| 2026-09-29 | Reminders are three paginated endpoints (`/reminders/due-soon`, `/overdue`, `/notifications`) plus `POST /{id}/dismiss` and `/dismiss-all`. | Keeps every list endpoint paginated and lets the UI fetch each section independently. |
+| 2026-09-29 | The initial migration's FTS index was edited in place (weights added) before the first deploy. | No database outside local dev/CI had applied it; after deploy, schema changes must be new migrations. |
 | 2026-09-29 | MSW for frontend HTTP mocking. | Tests hooks and pages through the real API client instead of mocking modules. |
