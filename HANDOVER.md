@@ -7,13 +7,14 @@
 
 ---
 
-> ### ▶ RESUME HERE (last updated 2026-09-29, after Phase 7)
-> - **Phases 1–7 are done**, pending Phase 7 commit/push and CI verification.
-> - **Next: Phase 8 (deployment).** Deployment configuration exists; Railway and Vercel still require
->   the user to sign in and configure project domains and environment variables.
-> - Phase 6 commit `e01d249` is pushed and CI is green. Frontend: 36 tests passed; build emits an
->   advisory for its 650 kB JavaScript bundle.
-> - Phase 7 local Playwright verification: all 3 browser flows passed. CI now includes an E2E job.
+> ### ▶ RESUME HERE (last updated 2026-09-29, Phase 8 deployment setup)
+> - **Phases 1–7 are done and pushed**, with all four CI jobs green (Phase 7 run `36600445816`).
+> - **Phase 8 setup is ready; live deployment is waiting on user dashboard access.** Docker,
+>   Railway and Vercel configuration has been added. Docker and the Railway/Vercel CLIs are not
+>   available in this environment; local E2E is green and CI is green.
+> - Next action: user connects the GitHub repo in Railway and Vercel dashboards, sets the listed
+>   root directories and environment variables, and shares the generated public domains (never
+>   share credentials in chat). Then continue deployment/live verification and Phase 9.
 > - Backend baseline remains 187 SQLite tests (96.7 % coverage) and 189 PostgreSQL tests.
 
 ## 0. Your job
@@ -113,8 +114,8 @@ short checklist of anything they must click or paste themselves in Vercel or Rai
 | 4. Notes, search, reminders API | ✅ done | `/api/v1/notes` (filters tag/pinned/task_id, pinned first), `/api/v1/search?q=&type=all|task|note` (segments in `title_highlights` and `snippet`), `/api/v1/reminders/{due-soon?hours=,overdue,notifications}` (all `Page[TaskRead]`), `POST /reminders/{id}/dismiss` → TaskRead, `POST /reminders/dismiss-all` → `{dismissed}`. 187 tests on SQLite (96.7 %), 189 on PG, including an EXPLAIN check that the GIN index is used. **The backend API is complete.** |
 | 5. Frontend foundation | ✅ done | See "Frontend foundation reference" below. |
 | 6. Frontend features | ✅ done | Implemented task/ToDo, notes, tags, search and reminders pages, hooks and components. Optimistic task completion; 36 frontend tests. Commit `e01d249` pushed; CI green. |
-| 7. Playwright E2E | ✅ done | Three browser flows pass locally. Added a fresh temporary SQLite webServer setup and an E2E CI job; awaiting CI for this commit. |
-| 8. Deployment | ⬜ | Railway and Vercel CLIs are installed but **not logged in**; the user must log in or connect the repo in the dashboards. |
+| 7. Playwright E2E | ✅ done | Three browser flows pass locally. Added a fresh temporary SQLite webServer setup and an E2E CI job; commit `44a1c2d` pushed and all four CI jobs pass. |
+| 8. Deployment | ⏳ in progress | Added `backend/Dockerfile`, `.dockerignore`, Railway health/restart settings and Vercel SPA rewrites. Live Railway/Vercel setup and verification need the user to connect the repo and set deployment variables in their dashboards. Docker and hosting CLIs are unavailable locally. |
 | 9. Final review + README | ⬜ | |
 
 ### Frontend foundation reference (Phase 5, done)
